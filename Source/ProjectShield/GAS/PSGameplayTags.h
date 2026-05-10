@@ -1,0 +1,55 @@
+﻿// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
+#include "NativeGameplayTags.h"
+
+/**
+ * プロジェクトのGameplayTagを管理する
+ */
+namespace PSGameplayTags
+{
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Guard);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Parry);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Deflect);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Roll);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Jump);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Sprint);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_SprintJump);
+
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_UseRightHand);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_UseLeftHand);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_UseBothHands);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Guard);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Deflect);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Parry);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Parry_Success);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Invincible);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_StaminaRegen_Blocked);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Roll);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Jump);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Sprint);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_SprintJump);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Attack_Failed);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_DisableInput);
+
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_Attack);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_Impact);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_ReImpact);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_BreakRate);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_DefenseType);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_MoveSpeed);
+
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Roll_Start);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Parry_Start);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Deflect_Start);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Attack_Start);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Attack_End);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Attack_Hit);
+
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Combat_Hit_Bleed);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Combat_Hit_Spark);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Combat_Hit_Parry);
+};
