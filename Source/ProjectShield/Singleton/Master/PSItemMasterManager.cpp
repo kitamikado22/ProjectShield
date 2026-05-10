@@ -7,27 +7,27 @@
 #include "Equipment/PSEquipmentBase.h"
 #include "Data/Item/PSEquipmentData.h"
 
-UPSItemMasterManager* UPSItemMasterManager::GetInstance(const UObject* WorldContextObject)
-{
-	if (not WorldContextObject)
-	{
-		return nullptr;
-	}
-
-	UWorld* World = WorldContextObject->GetWorld();
-	if (not World)
-	{
-		return nullptr;
-	}
-
-	UGameInstance* GameInstance = World->GetGameInstance<UGameInstance>();
-	if (not GameInstance)
-	{
-		return nullptr;
-	}
-
-	return GameInstance->GetSubsystem<UPSItemMasterManager>();
-}
+//UPSItemMasterManager* UPSItemMasterManager::GetInstance(const UObject* WorldContextObject)
+//{
+//	if (not WorldContextObject)
+//	{
+//		return nullptr;
+//	}
+//
+//	UWorld* World = WorldContextObject->GetWorld();
+//	if (not World)
+//	{
+//		return nullptr;
+//	}
+//
+//	UGameInstance* GameInstance = World->GetGameInstance<UGameInstance>();
+//	if (not GameInstance)
+//	{
+//		return nullptr;
+//	}
+//
+//	return GameInstance->GetSubsystem<UPSItemMasterManager>();
+//}
 
 TSharedPtr<FPSAssetLoadHandle> UPSItemMasterManager::GetOrLoadItemData(FName ItemId, TFunction<void(UPSItemData*)> OnLoadCompleted)
 {

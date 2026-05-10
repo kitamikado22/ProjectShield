@@ -22,7 +22,7 @@ public:
 	//virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
 	/** 実際のインスタンスを取得 */
-	static UPSSocketMasterManager* GetInstance(const UObject* WorldContextObject);
+	//static UPSSocketMasterManager* GetInstance(const UObject* WorldContextObject);
 
 	/** 指定IDの行データ取得 */
 	//virtual const FPSEquipmentSocketTableRow* GetRowDataByID(FName ID) const override;

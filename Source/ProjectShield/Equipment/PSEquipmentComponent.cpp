@@ -27,7 +27,8 @@ void UPSEquipmentComponent::BeginPlay()
 	{
 		FName SKMName(SkeltalMesh->GetName());	// スケルタルメッシュの名前を取得
 
-		auto Handle = UPSSocketMasterManager::GetInstance(this)->GetOrLoadEquipmentSocketMap(SKMName, [this](UPSSocketData* LoadedData)
+		UPSSocketMasterManager* SocketMaster = UPSGameInstanceSubsystem::Get<UPSSocketMasterManager>(this);
+		auto Handle = SocketMaster->GetOrLoadEquipmentSocketMap(SKMName, [this](UPSSocketData* LoadedData)
 		{
 			SocketData = LoadedData;
 			EquipmentSocketMap = LoadedData->EquipmentSocketMap;
@@ -78,7 +79,8 @@ void UPSEquipmentComponent::Equip(EEquipmentSlot Slot, FName ItemId)
 	}
 
 	// 指定の装備品データを取得・ロード
-	UPSItemMasterManager::GetInstance(this)->GetOrLoadEquipmentData(ItemId, [Slot, this](UPSEquipmentData* LoadedData) 
+	UPSItemMasterManager* ItemMaster = UPSGameInstanceSubsystem::Get<UPSItemMasterManager>(this);
+	ItemMaster->GetOrLoadEquipmentData(ItemId, [Slot, this](UPSEquipmentData* LoadedData)
 	{
 		// 指定スロットに装備できるか調べる
 		if (CanEquipInSlot(Slot, LoadedData) == false)
@@ -89,7 +91,8 @@ void UPSEquipmentComponent::Equip(EEquipmentSlot Slot, FName ItemId)
 		EquipmentMap.Emplace(Slot, LoadedData);
 
 		// 装備品アクタのクラス型をロードして取得
-		UPSItemMasterManager::GetInstance(this)->LoadClass(LoadedData->EquipmentClass, [Slot, this](UClass* LoadedEquipmentClass)
+		UPSItemMasterManager* ItemMaster = UPSGameInstanceSubsystem::Get<UPSItemMasterManager>(this);
+		ItemMaster->LoadClass(LoadedData->EquipmentClass, [Slot, this](UClass* LoadedEquipmentClass)
 		{
 			// 装備データのロードエラーなどで失敗している場合
 			if (not EquipmentMap.Contains(Slot))

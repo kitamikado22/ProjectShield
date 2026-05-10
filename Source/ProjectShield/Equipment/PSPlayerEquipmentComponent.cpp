@@ -25,7 +25,8 @@ void UPSPlayerEquipmentComponent::Equip(EEquipmentSlot Slot, FName ItemID)
 {
 	Super::Equip(Slot, ItemID);
 
-	UPSItemMasterManager::GetInstance(this)->GetOrLoadEquipmentData(ItemID, [ItemID, Slot, this](UPSEquipmentData* LoadedData)
+	UPSItemMasterManager* ItemMaster = UPSGameInstanceSubsystem::Get<UPSItemMasterManager>(this);
+	ItemMaster->GetOrLoadEquipmentData(ItemID, [ItemID, Slot, this](UPSEquipmentData* LoadedData)
 		{
 			// 指定スロットに装備できるか調べる
 			if (CanEquipInSlot(Slot, LoadedData) == false)
@@ -116,7 +117,8 @@ void UPSPlayerEquipmentComponent::GiveEquipmentAbility(UPSEquipmentOnHandsData* 
 		return;
 	}
 
-	UPSItemMasterManager::GetInstance(this)->LoadClass(EquipmentData->AbilitySoftClassMap[AbilityInputID], [this, AbilityInputID](UClass* LoadedClass)
+	UPSItemMasterManager* ItemMaster = UPSGameInstanceSubsystem::Get<UPSItemMasterManager>(this);
+	ItemMaster->LoadClass(EquipmentData->AbilitySoftClassMap[AbilityInputID], [this, AbilityInputID](UClass* LoadedClass)
 		{
 			if (not LoadedClass)
 			{

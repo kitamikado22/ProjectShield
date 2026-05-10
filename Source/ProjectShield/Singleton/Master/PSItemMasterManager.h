@@ -25,7 +25,7 @@ private:
 public:
 
 	/** 実際のインスタンスを取得 */
-	static UPSItemMasterManager* GetInstance(const UObject* WorldContextObject);
+	//static UPSItemMasterManager* GetInstance(const UObject* WorldContextObject);
 
 	/** 指定のIDのアイテムデータを取得またはロード */
 	TSharedPtr<FPSAssetLoadHandle> GetOrLoadItemData(FName ItemID, TFunction<void(UPSItemData*)> OnLoadCompleted);
