@@ -12,27 +12,27 @@
 //	Super::Initialize(Collection);
 //}
 
-UPSSocketMasterManager* UPSSocketMasterManager::GetInstance(const UObject* WorldContextObject)
-{
-	if (not WorldContextObject)
-	{
-		return nullptr;
-	}
-
-	UWorld* World = WorldContextObject->GetWorld();
-	if (not World)
-	{
-		return nullptr;
-	}
-
-	UGameInstance* GameInstance = World->GetGameInstance<UGameInstance>();
-	if (not GameInstance)
-	{
-		return nullptr;
-	}
-
-	return GameInstance->GetSubsystem<UPSSocketMasterManager>();
-}
+//UPSSocketMasterManager* UPSSocketMasterManager::GetInstance(const UObject* WorldContextObject)
+//{
+//	if (not WorldContextObject)
+//	{
+//		return nullptr;
+//	}
+//
+//	UWorld* World = WorldContextObject->GetWorld();
+//	if (not World)
+//	{
+//		return nullptr;
+//	}
+//
+//	UGameInstance* GameInstance = World->GetGameInstance<UGameInstance>();
+//	if (not GameInstance)
+//	{
+//		return nullptr;
+//	}
+//
+//	return GameInstance->GetSubsystem<UPSSocketMasterManager>();
+//}
 
 //const FPSEquipmentSocketTableRow* UPSSocketMasterManager::GetRowDataByID(FName ID) const
 //{

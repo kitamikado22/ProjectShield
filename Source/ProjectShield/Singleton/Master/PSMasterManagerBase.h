@@ -7,6 +7,7 @@
 #include "Utility/Observer/PSSubject.h"
 #include "Utility/PSAssetManager.h"
 #include "Utility/PSDebugMessageMacross.h"
+#include "Singleton/PSGameInstanceSubsystem.h"
 #include "PSMasterManagerBase.generated.h"
 
 
@@ -14,7 +15,7 @@
  * ゲームのマスターデータ管理者
  */
 UCLASS(Abstract)
-class PROJECTSHIELD_API UPSMasterManagerBase : public UGameInstanceSubsystem
+class PROJECTSHIELD_API UPSMasterManagerBase : public UPSGameInstanceSubsystem
 {
 	GENERATED_BODY()
 
