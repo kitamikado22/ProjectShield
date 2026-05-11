@@ -91,14 +91,14 @@ protected:
 
 public:
 
+	/** ロックオンコンポーネント取得 */
+	UPSLockOnComponent* GetLockOnComponent() const { return LockOnComponent; }
+
 	/** プレイヤーのデータを取得 */
 	virtual UPSPlayerData* GetCharacterData() const override { return Cast<UPSPlayerData>(CharacterData); }
 
 	/** 現在の移動入力値取得 */
 	FVector2D GetMoveInput() const { return MoveInput; }
-
-	/** ロックオンコンポーネント取得 */
-	UPSLockOnComponent* GetLockOnComponent() const { return LockOnComponent; }
 
 public:
 	/** 動いたときのイベント取得 */
@@ -163,6 +163,9 @@ protected:
 
 	/** 入力無効タグが追加・削除されたときに呼ばれる */
 	void OnDisableInputTagChanged(const FGameplayTag Tag, int32 NewCount);
+
+	/** カメラの設定などを状況によって更新 */
+	void UpdateCamera(float DeltaTime);
 
 protected:
 

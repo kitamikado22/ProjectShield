@@ -13,6 +13,7 @@ enum class EPSAbilityInputID : uint8
 	Jump,
 	Sprint,
 	Roll,
+	LockOn,
 	UseRightHand,
 	UseRightHand_Second,
 	UseLeftHand,

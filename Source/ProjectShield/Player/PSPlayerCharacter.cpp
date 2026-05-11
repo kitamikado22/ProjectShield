@@ -14,6 +14,7 @@
 #include "GAS/Abilities/PSGA_Sprint.h"
 #include "GAS/Abilities/PSGA_Jump.h"
 #include "GAS/Abilities/PSGA_Roll.h"
+#include "GAS/Abilities/PSGA_LockOn.h"
 #include "GAS/Abilities/PSGA_SprintJump.h"
 #include "GAS/Abilities/PSGA_StaminaRegen.h"
 #include "GAS/Abilities/PSGA_HitReaction.h"
@@ -51,8 +52,6 @@ APSPlayerCharacter::APSPlayerCharacter(const FObjectInitializer& ObjectInitializ
 	SpringArmComp->bUsePawnControlRotation = true;
 	SpringArmComp->bDoCollisionTest = true;
 	SpringArmComp->ProbeChannel = ECC_Camera;
-	SpringArmComp->TargetArmLength = 300.f;
-	SpringArmComp->SocketOffset = FVector(0.f, 0.f, 70.f);
 
 	// カメラの作成と設定
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
@@ -168,7 +167,7 @@ void APSPlayerCharacter::OnPressedRoll()
 
 void APSPlayerCharacter::OnPressedLockOn()
 {
-
+	AbilityInputPressed(EPSAbilityInputID::LockOn);
 }
 
 void APSPlayerCharacter::AbilityInputPressed(EPSAbilityInputID InputID)
@@ -184,6 +183,10 @@ void APSPlayerCharacter::AbiilityInputReleased(EPSAbilityInputID InputID)
 void APSPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// 値などの初期化
+	SpringArmComp->TargetArmLength = GetCharacterData()->TargetArmLength;
+	SpringArmComp->SocketOffset = GetCharacterData()->NormalCameraOffset;
 
 	// 体力・スタミナ・体幹が変更したときのイベントをUI側に通知
 	GetHealthAttributeSet()->GetOnHealthUpdatedEvent()->Subscribe(this, [this](float NewValue)
@@ -236,14 +239,14 @@ void APSPlayerCharacter::BeginPlay()
 		});
 
 	// UIに初期値を設定
-	if (APSPlayerController* PlayerController = Cast<APSPlayerController>(GetController()))
+	if (APSPlayerController* PC = Cast<APSPlayerController>(GetController()))
 	{
-		PlayerController->GetMainHUDWidget()->GetHealthBar()->UpdateValue(GetHealthAttributeSet()->GetHealth());
-		PlayerController->GetMainHUDWidget()->GetHealthBar()->UpdateMaxValue(GetHealthAttributeSet()->GetMaxHealth());
-		PlayerController->GetMainHUDWidget()->GetStaminaBar()->UpdateValue(GetStaminaAttributeSet()->GetStamina());
-		PlayerController->GetMainHUDWidget()->GetStaminaBar()->UpdateMaxValue(GetStaminaAttributeSet()->GetMaxStamina());
-		PlayerController->GetMainHUDWidget()->GetBreakBar()->UpdateValue(GetBreakAttributeSet()->GetBreak());
-		PlayerController->GetMainHUDWidget()->GetBreakBar()->UpdateMaxValue(GetBreakAttributeSet()->GetMaxBreak());
+		PC->GetMainHUDWidget()->GetHealthBar()->UpdateValue(GetHealthAttributeSet()->GetHealth());
+		PC->GetMainHUDWidget()->GetHealthBar()->UpdateMaxValue(GetHealthAttributeSet()->GetMaxHealth());
+		PC->GetMainHUDWidget()->GetStaminaBar()->UpdateValue(GetStaminaAttributeSet()->GetStamina());
+		PC->GetMainHUDWidget()->GetStaminaBar()->UpdateMaxValue(GetStaminaAttributeSet()->GetMaxStamina());
+		PC->GetMainHUDWidget()->GetBreakBar()->UpdateValue(GetBreakAttributeSet()->GetBreak());
+		PC->GetMainHUDWidget()->GetBreakBar()->UpdateMaxValue(GetBreakAttributeSet()->GetMaxBreak());
 	}
 
 	// ブレイク値が悪化したときヒットリアクションアビリティを発動
@@ -252,12 +255,19 @@ void APSPlayerCharacter::BeginPlay()
 			OnWorsonUpdate(Data);
 		});
 
+	//// ロックオンが有効・無効化したときのイベントを購読
+	//LockOnComponent->GetOnLockOnEvent()->Subscribe(this, [this](const TWeakObjectPtr<AActor>& InTargetActor)
+	//	{
+	//		OnLockOnUpdate(InTargetActor.Get());
+	//	});
 }
 
 void APSPlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// カメラやロックオン時のマーカーなどを設定
+	UpdateCamera(DeltaTime);
 }
 
 void APSPlayerCharacter::PossessedBy(AController* NewController)
@@ -278,6 +288,9 @@ void APSPlayerCharacter::PossessedBy(AController* NewController)
 		// ローリングアビリティ
 		AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(
 			GetCharacterData()->RollAbilityClass, 1, static_cast<int32>(EPSAbilityInputID::Roll)));
+		// ロックオンアビリティ
+		AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(
+			GetCharacterData()->LockOnAbilityClass, 1, static_cast<int32>(EPSAbilityInputID::LockOn)));
 
 		// 入力無効タグが更新されたときのイベント購読
 		AbilitySystemComponent->RegisterGameplayTagEvent(
@@ -393,4 +406,42 @@ void APSPlayerCharacter::OnDisableInputTagChanged(const FGameplayTag Tag, int32 
 		Subsystem->AddMappingContext(PC->GetIMC_Movement(), 10);	// 移動に関する入力を再適用
 		Subsystem->AddMappingContext(PC->GetIMC_Combat(), 20);	// 戦闘に関する入力を再適用
 	}
+}
+
+void APSPlayerCharacter::UpdateCamera(float DeltaTime)
+{
+	APSPlayerController* PC = Cast<APSPlayerController>(GetController());
+	if (not PC)
+	{
+		DEBUG_MESSAGE_ERROR(TEXT("Failed to cast GetController to PlayerController"));
+		UE_LOG(LogTemp, Error, TEXT("Failed to cast GetController to PlayerController")); SET_LOG_PATH(Error);
+		return;
+	}
+
+	// 目標のオフセット
+	FVector DesiredOffset;
+
+	// ロックオン状態
+	if (LockOnComponent->IsLockedOn())
+	{
+		bUseControllerRotationYaw = true;
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+
+		DesiredOffset = GetCharacterData()->LockOnCameraOffset;
+
+	}
+	else
+	{
+		bUseControllerRotationYaw = false;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+
+		DesiredOffset = GetCharacterData()->NormalCameraOffset;
+
+	}
+
+	// カメラを滑らかにオフセット変更
+	SpringArmComp->SocketOffset = FMath::VInterpTo(SpringArmComp->SocketOffset, DesiredOffset, DeltaTime, 10.f);
+
+	// HUDでロックオンしている敵をマークする
+	PC->GetMainHUDWidget()->MarkLockOnPointerToTarget(LockOnComponent->GetCurrentTarget());
 }

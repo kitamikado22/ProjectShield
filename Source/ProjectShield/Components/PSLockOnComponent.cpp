@@ -4,8 +4,15 @@
 #include "PSLockOnComponent.h"
 #include "Kismet\KismetSystemLibrary.h"
 #include "Kismet\GameplayStatics.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Character/PSCharacterBase.h"
+#include "Enemy/PSEnemyCharacterBase.h"
 #include "Utility/PSDebugMessageMacross.h"
+
+UPSLockOnComponent::UPSLockOnComponent()
+{
+    PrimaryComponentTick.bCanEverTick = true;
+}
 
 void UPSLockOnComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
@@ -23,6 +30,9 @@ void UPSLockOnComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
     FVector DirectionToTarget = CurrentTarget->GetActorLocation() - OwnerCharacter->GetActorLocation();
     FRotator RotationToTarget = DirectionToTarget.Rotation();
     FRotator CurrentRotation = Controller->GetControlRotation();
+
+    RotationToTarget.Pitch = CurrentRotation.Pitch;
+    RotationToTarget.Roll = CurrentRotation.Roll;
 
     FRotator NewRotation = FMath::RInterpTo(CurrentRotation, RotationToTarget, DeltaTime, 10.f);
 
@@ -55,6 +65,14 @@ void UPSLockOnComponent::ToggleLockOn()
             LockOn(Target);
         }
     }
+
+    // イベント配信
+    OnLockOnEvent->OnNext(CurrentTarget);
+}
+
+bool UPSLockOnComponent::IsLockedOn() const
+{
+    return CurrentTarget ? true : false;
 }
 
 AActor* UPSLockOnComponent::FindTarget()
@@ -105,6 +123,12 @@ AActor* UPSLockOnComponent::FindTarget()
 
     for (AActor* Target : OutActors)
     {
+        // 敵キャラクター型の子クラスではない場合、敵ではないので終了
+        if (not Target->IsA<APSEnemyCharacterBase>())
+        {
+            continue;
+        }
+
         // 3D空間から2D画面の座標に変換
         FVector2D ScreenPos;
         bool bProjected = UGameplayStatics::ProjectWorldToScreen(PC, Target->GetActorLocation(), ScreenPos);
@@ -118,8 +142,8 @@ AActor* UPSLockOnComponent::FindTarget()
         // 物理距離
         float WorldDistance = FVector::Distance(OwnerCharacter->GetActorLocation(), Target->GetActorLocation());
 
-        // スコア
-        float Score = ScreenDistance + WorldDistance;
+        // スコア（重みを付けて画面の中央に近いほうが少し有利）
+        float Score = ScreenDistance * 0.7f + WorldDistance * 0.3f;
 
         // ベストターゲット更新
         if (Score < BestScore)
@@ -127,6 +151,15 @@ AActor* UPSLockOnComponent::FindTarget()
             BestScore = Score;
             BestTarget = Target;
         }
+    }
+
+    DEBUG_MESSAGE(FString::Printf(TEXT("Lock on!  Target Actor is %s"), *BestTarget->GetName()));
+    UE_LOG(LogTemp, Log, TEXT("Lock on!  Target Actor is %s"), *BestTarget->GetName());
+
+    if (not BestTarget)
+    {
+        DEBUG_MESSAGE_WARNING(TEXT("There were no enemies to target"));
+        UE_LOG(LogTemp, Log, TEXT("There were no enemies to target"));
     }
 
     return BestTarget;
