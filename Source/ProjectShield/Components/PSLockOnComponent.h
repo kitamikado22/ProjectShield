@@ -34,6 +34,8 @@ public:
     /** ロックオンが有効であるか */
     bool IsLockedOn() const;
 
+    AActor* GetCurrentTarget() const { return CurrentTarget; }
+
 protected:
 
     /** 指定のターゲットをロックオン */
@@ -52,8 +54,8 @@ protected:
 
 public:
     /** ロックオンが有効・無効化されたときのイベント取得 */
-    TSharedPtr<IPSObservable<AActor>> GetOnLockOnEvent() const { return OnLockOnEvent; }
+    TSharedPtr<IPSObservable<TWeakObjectPtr<AActor>>> GetOnLockOnEvent() const { return OnLockOnEvent; }
 protected:
     /** ロックオンが有効・無効化されたときのイベント */
-    TSharedPtr<TPSSubject<AActor>> OnLockOnEvent = TPSSubject<AActor>::Create();
+    TSharedPtr<TPSSubject<TWeakObjectPtr<AActor>>> OnLockOnEvent = TPSSubject<TWeakObjectPtr<AActor>>::Create();
 };

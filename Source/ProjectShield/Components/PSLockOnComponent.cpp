@@ -31,6 +31,9 @@ void UPSLockOnComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
     FRotator RotationToTarget = DirectionToTarget.Rotation();
     FRotator CurrentRotation = Controller->GetControlRotation();
 
+    RotationToTarget.Pitch = CurrentRotation.Pitch;
+    RotationToTarget.Roll = CurrentRotation.Roll;
+
     FRotator NewRotation = FMath::RInterpTo(CurrentRotation, RotationToTarget, DeltaTime, 10.f);
 
     Controller->SetControlRotation(NewRotation);
@@ -64,7 +67,7 @@ void UPSLockOnComponent::ToggleLockOn()
     }
 
     // イベント配信
-    OnLockOnEvent->OnNext(*CurrentTarget);
+    OnLockOnEvent->OnNext(CurrentTarget);
 }
 
 bool UPSLockOnComponent::IsLockedOn() const

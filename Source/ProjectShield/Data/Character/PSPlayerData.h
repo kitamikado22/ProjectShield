@@ -43,5 +43,5 @@ public:
 
 	/** ロックオン時のカメラのオフセット */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PS|Camera")
-	FVector LockOnCameraOffset = FVector(0.f, 80.f, 20.f);
+	FVector LockOnCameraOffset = FVector(0.f, 0.f, 80.f);
 };

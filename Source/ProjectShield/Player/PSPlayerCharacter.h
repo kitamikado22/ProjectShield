@@ -165,7 +165,7 @@ protected:
 	void OnDisableInputTagChanged(const FGameplayTag Tag, int32 NewCount);
 
 	/** カメラの設定などを状況によって更新 */
-	void UpdateCamera();
+	void UpdateCamera(float DeltaTime);
 
 protected:
 
