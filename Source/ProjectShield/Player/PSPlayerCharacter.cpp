@@ -14,6 +14,7 @@
 #include "GAS/Abilities/PSGA_Sprint.h"
 #include "GAS/Abilities/PSGA_Jump.h"
 #include "GAS/Abilities/PSGA_Roll.h"
+#include "GAS/Abilities/PSGA_LockOn.h"
 #include "GAS/Abilities/PSGA_SprintJump.h"
 #include "GAS/Abilities/PSGA_StaminaRegen.h"
 #include "GAS/Abilities/PSGA_HitReaction.h"
@@ -51,8 +52,6 @@ APSPlayerCharacter::APSPlayerCharacter(const FObjectInitializer& ObjectInitializ
 	SpringArmComp->bUsePawnControlRotation = true;
 	SpringArmComp->bDoCollisionTest = true;
 	SpringArmComp->ProbeChannel = ECC_Camera;
-	SpringArmComp->TargetArmLength = 300.f;
-	SpringArmComp->SocketOffset = FVector(0.f, 0.f, 70.f);
 
 	// カメラの作成と設定
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
@@ -168,7 +167,7 @@ void APSPlayerCharacter::OnPressedRoll()
 
 void APSPlayerCharacter::OnPressedLockOn()
 {
-
+	AbilityInputPressed(EPSAbilityInputID::LockOn);
 }
 
 void APSPlayerCharacter::AbilityInputPressed(EPSAbilityInputID InputID)
@@ -184,6 +183,10 @@ void APSPlayerCharacter::AbiilityInputReleased(EPSAbilityInputID InputID)
 void APSPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// 値などの初期化
+	SpringArmComp->TargetArmLength = GetCharacterData()->TargetArmLength;
+	SpringArmComp->SocketOffset = GetCharacterData()->NormalCameraOffset;
 
 	// 体力・スタミナ・体幹が変更したときのイベントをUI側に通知
 	GetHealthAttributeSet()->GetOnHealthUpdatedEvent()->Subscribe(this, [this](float NewValue)
@@ -252,6 +255,11 @@ void APSPlayerCharacter::BeginPlay()
 			OnWorsonUpdate(Data);
 		});
 
+	// ロックオンが有効・無効化したときのイベントを購読
+	LockOnComponent->GetOnLockOnEvent()->Subscribe(this, [this](const AActor& TargetActor)
+		{
+			UpdateCamera();
+		});
 }
 
 void APSPlayerCharacter::Tick(float DeltaTime)
@@ -278,6 +286,9 @@ void APSPlayerCharacter::PossessedBy(AController* NewController)
 		// ローリングアビリティ
 		AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(
 			GetCharacterData()->RollAbilityClass, 1, static_cast<int32>(EPSAbilityInputID::Roll)));
+		// ロックオンアビリティ
+		AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(
+			GetCharacterData()->LockOnAbilityClass, 1, static_cast<int32>(EPSAbilityInputID::LockOn)));
 
 		// 入力無効タグが更新されたときのイベント購読
 		AbilitySystemComponent->RegisterGameplayTagEvent(
@@ -392,5 +403,24 @@ void APSPlayerCharacter::OnDisableInputTagChanged(const FGameplayTag Tag, int32 
 	{
 		Subsystem->AddMappingContext(PC->GetIMC_Movement(), 10);	// 移動に関する入力を再適用
 		Subsystem->AddMappingContext(PC->GetIMC_Combat(), 20);	// 戦闘に関する入力を再適用
+	}
+}
+
+void APSPlayerCharacter::UpdateCamera()
+{
+	// ロックオン状態
+	if (LockOnComponent->IsLockedOn())
+	{
+		bUseControllerRotationYaw = true;
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+
+		SpringArmComp->SocketOffset = GetCharacterData()->LockOnCameraOffset;
+	}
+	else
+	{
+		bUseControllerRotationYaw = false;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+
+		SpringArmComp->SocketOffset = GetCharacterData()->NormalCameraOffset;
 	}
 }

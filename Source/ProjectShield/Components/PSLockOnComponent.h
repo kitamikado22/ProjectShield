@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Utility/Observer/PSSubject.h"
 #include "PSLockOnComponent.generated.h"
 
 /** 
@@ -16,6 +17,8 @@ class PROJECTSHIELD_API UPSLockOnComponent : public UActorComponent
 
 public:
 
+    UPSLockOnComponent();
+
     virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 protected:
@@ -27,6 +30,9 @@ public:
 
     /** ロックオンを有効化・無効化するトグル */
     void ToggleLockOn();
+
+    /** ロックオンが有効であるか */
+    bool IsLockedOn() const;
 
 protected:
 
@@ -42,6 +48,12 @@ protected:
 protected:
 
     /** 現在のターゲット */
-    TObjectPtr<AActor> CurrentTarget;
+    TObjectPtr<AActor> CurrentTarget = nullptr;
 
+public:
+    /** ロックオンが有効・無効化されたときのイベント取得 */
+    TSharedPtr<IPSObservable<AActor>> GetOnLockOnEvent() const { return OnLockOnEvent; }
+protected:
+    /** ロックオンが有効・無効化されたときのイベント */
+    TSharedPtr<TPSSubject<AActor>> OnLockOnEvent = TPSSubject<AActor>::Create();
 };

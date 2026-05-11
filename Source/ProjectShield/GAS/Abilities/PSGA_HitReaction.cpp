@@ -90,6 +90,24 @@ void UPSGA_HitReaction::ActivateAbility(
 	// 最終的に吹っ飛ばす速度ベクトル
 	FVector ImpactVerocity = ImpactDirection * InImpact * LaunchMultiplier;
 
+	// コンテキストから守備方法を取得
+	const FGameplayEffectContext* Context = TriggerEventData->ContextHandle.Get();
+	if (not Context)
+	{
+		DEBUG_MESSAGE_ERROR(TEXT("GameplayEffectContext is null"));
+		UE_LOG(LogTemp, Error, TEXT("GameplayEffectContext is null")); SET_LOG_PATH(Error);
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+	if (Context->GetScriptStruct() != FPSGameplayEffectContext::StaticStruct())
+	{
+		DEBUG_MESSAGE_ERROR(TEXT("GameplayEffectContext is not of type FPSGameplayEffectContext"));
+		UE_LOG(LogTemp, Error, TEXT("GameplayEffectContext is not of type FPSGameplayEffectContext")); SET_LOG_PATH(Error);
+		return;
+	}
+	const FPSGameplayEffectContext* PSContext = static_cast<const FPSGameplayEffectContext*>(Context);
+	EPSDefenseType DefenseType = static_cast<EPSDefenseType>(PSContext->GenericDataMap.FindRef(PSGameplayTags::Data_DefenseType));
+
 	// 衝撃力が強ければ、吹っ飛びモーション
 	if (InImpact > HeavyHitThreshold)
 	{
@@ -108,8 +126,8 @@ void UPSGA_HitReaction::ActivateAbility(
 		// 少し上方向に力を加える
 		ImpactVerocity = ImpactVerocity + FVector(0.f, 0.f, 400.f);
 	}
-	// 衝撃力が弱ければ、軽いヒットモーション
-	else
+	// 衝撃力が弱くガードなどをしていなければ軽いヒットモーション
+	else if (DefenseType == EPSDefenseType::None)
 	{
 		UAbilityTask_PlayMontageAndWait* MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, LightHitMontage);
 		MontageTask->OnCompleted.AddDynamic(this, &UPSGA_HitReaction::OnMontageFinished);
@@ -124,24 +142,6 @@ void UPSGA_HitReaction::ActivateAbility(
 	DEBUG_MESSAGE(FString::Printf(TEXT("Impact amount : %f  ImpactDirection(%f, %f, %f)"), ImpactVerocity.Size(), ImpactVerocity.X, ImpactVerocity.Y, ImpactVerocity.Z));
 	UE_LOG(LogTemp, Log, TEXT("Impact amount : %f  ImpactDirection(%f, %f, %f)"), ImpactVerocity.Size(), ImpactVerocity.X, ImpactVerocity.Y, ImpactVerocity.Z);
 
-
-	// コンテキストから守備方法を取得
-	const FGameplayEffectContext* Context = TriggerEventData->ContextHandle.Get();
-	if (not Context)
-	{
-		DEBUG_MESSAGE_ERROR(TEXT("GameplayEffectContext is null"));
-		UE_LOG(LogTemp, Error, TEXT("GameplayEffectContext is null")); SET_LOG_PATH(Error);
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
-		return;
-	}
-	if (Context->GetScriptStruct() != FPSGameplayEffectContext::StaticStruct())
-	{
-		DEBUG_MESSAGE_ERROR(TEXT("GameplayEffectContext is not of type FPSGameplayEffectContext"));
-		UE_LOG(LogTemp, Error, TEXT("GameplayEffectContext is not of type FPSGameplayEffectContext")); SET_LOG_PATH(Error);
-		return;
-	}
-	const FPSGameplayEffectContext* PSContext = static_cast<const FPSGameplayEffectContext*>(Context);
-	EPSDefenseType DefenseType = static_cast<EPSDefenseType>(PSContext->GenericDataMap.FindRef(PSGameplayTags::Data_DefenseType));
 
 	// 演出を組む
 	FGameplayCueParameters Params;
@@ -165,6 +165,11 @@ void UPSGA_HitReaction::ActivateAbility(
 		ASC->ExecuteGameplayCue(PSGameplayTags::GameplayCue_Combat_Hit_Spark, Params);
 	}
 	
+	// 衝撃力が小さく、盾を使って守っている場合終了
+	if (InImpact < HeavyHitThreshold && DefenseType != EPSDefenseType::None)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+	}
 }
 
 void UPSGA_HitReaction::OnMontageFinished()

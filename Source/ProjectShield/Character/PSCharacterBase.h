@@ -126,7 +126,7 @@ public:
 	TSharedRef<IPSObservable<FHitResult>> GetOnLandedEvent() const { return OnLandedEvent; }
 
 	/** 空中にいるときのイベント取得 */
-	TSharedRef<IPSObservable<Empty>> GetOnAirEvent() const { return OnAirEvent; }
+	TSharedRef<IPSObservable<>> GetOnAirEvent() const { return OnAirEvent; }
 
 protected:
 
@@ -134,7 +134,7 @@ protected:
 	TSharedRef<TPSSubject<FHitResult>> OnLandedEvent = TPSSubject<FHitResult>::Create();
 
 	/** 空中にいるときのイベント */
-	TSharedRef<TPSSubject<Empty>> OnAirEvent = TPSSubject<Empty>::Create();
+	TSharedRef<TPSSubject<>> OnAirEvent = TPSSubject<>::Create();
 
 protected:
 
