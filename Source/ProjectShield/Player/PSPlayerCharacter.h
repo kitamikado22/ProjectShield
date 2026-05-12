@@ -26,6 +26,7 @@ class PROJECTSHIELD_API APSPlayerCharacter : public APSCharacterBase
 
 public:
 
+	/** コンストラクタ */
 	APSPlayerCharacter(const FObjectInitializer& ObjectInitializer);
 
 protected:
