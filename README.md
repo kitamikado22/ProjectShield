@@ -68,7 +68,7 @@ flowchart TB
 ```
 
 ## アピールポイント
-- `Gameplay Ability System`（GAS）を用いた拡張性・保守性を重視した設計
+- `Gameplay Ability System`（GAS）を用いた**拡張性・保守性を重視した設計**
 - `GameplayTag`を使ったタグによるイベント駆動
 - マスターデータを管理するシングルトンクラスを用いたメモリやCPU負荷を軽減した実装
 - `Primary Data Asset`を使ったデータ駆動
